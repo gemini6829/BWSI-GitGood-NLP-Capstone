@@ -1,4 +1,4 @@
-# description vector (shape: (512,)) of image -> linear encoder -> caption unit vector (shape: (512,))
+# description vector (shape: (512,)) of image -> linear encoder -> caption unit vector (shape: (200,))
 
 from mynn.layers import dense
 from mygrad import Tensor

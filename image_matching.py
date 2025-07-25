@@ -20,11 +20,11 @@ def create_image_database(model, validation_set, coco_data):
     all_image_ids = list(val_image_ids)
 
     # Get the embeddings for the image ID's 
-    all_features = coco_data.image_id_to_embedding(all_image_ids)
+    all_features = coco_data.embedding_for_image_id(all_image_ids)
 
     #use the model to get embeddings
-    with mg.no_grad():
-        embeddings = model(mg.tensor(all_features))
+    
+    embeddings = model(mg.tensor(all_features))
     
     # Store them in a dict 
     for i, image_id in enumerate(all_image_ids):
