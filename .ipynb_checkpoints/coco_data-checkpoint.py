@@ -36,7 +36,6 @@ class Coco_Data:
             caption_id = cap["id"]
             self.image_id_to_cap_id[image_id].append(caption_id)
             self.caption_id_to_image_id[caption_id] = image_id
-            self.caption_id_to_image_id[caption_id] = image_id
             self.caption_id_to_captions[caption_id] = cap["caption"]
             
         self.caption_id_to_embedding = {}
