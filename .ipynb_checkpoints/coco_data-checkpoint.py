@@ -55,7 +55,8 @@ class Coco_Data:
         #     caption_id: self.resnet18_features[self.caption_id_to_image_id[caption_id]] for caption_id in self.caption_ids
 
     def caption_id_to_embedding(self, caption_ids, glove):
-        tokenized_captions = [tokenize(caption) for caption in self.caption]
+        captions = [self.caption_id_to_captions[cap_id] for cap_id in caption_ids]
+        tokenized_captions = [tokenize(caption) for caption in captions]
 
         idf = calculate_IDF(tokenized_captions)
         for tokens in tokenized_captions:
@@ -69,16 +70,16 @@ class Coco_Data:
             vectors[n] = self.resnet18_features[id]
         return vectors
 
-    def get_url_for_image(self, image_id):
+    def url_for_image(self, image_id):
         return self.image_id_to_urls[image_id]
     
-    def get_captions_for_image(self, image_id):
+    def captions_for_image(self, image_id):
         return self.image_id_to_cap_id[image_id]
     
-    def get_image_for_caption(self, caption_id):
+    def image_for_caption(self, caption_id):
         return self.caption_id_to_image_id[caption_id]
     
-    def get_text_for_caption(self, caption_id):
+    def text_for_caption(self, caption_id):
         return self.caption_id_to_captions[caption_id]
     
     def get_image_ids(self):
