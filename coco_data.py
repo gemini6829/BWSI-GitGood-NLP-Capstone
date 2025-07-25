@@ -34,17 +34,17 @@ class Coco_Data:
             self.caption_id_to_captions[caption_id] = cap["caption"]
             
         self.caption_id_to_embedding = {}
-        tokenized_captions = [tokenize(self.get_text_for_caption[caption]) for caption in self.captions_ids]
+        tokenized_captions = [tokenize(self.text_for_caption(caption)) for caption in self.caption_ids]
         idf = calculate_IDF(tokenized_captions)
         
         for caption_id, tokens in zip(self.caption_ids, tokenized_captions):
-            embedding = create_embedding(tokens, glove, idf)
+            embedding = create_embedding(tokens, idf, glove)
             self.caption_id_to_embedding[caption_id] = embedding
 
-    def caption_id_to_embedding(self, caption_id):
+    def embedding_for_caption_id(self, caption_id):
         return self.caption_id_to_embedding[caption_id]
 
-    def image_id_to_embedding(self, image_id):
+    def embedding_for_image_id(self, image_id):
         vectors = np.zeros((len(image_id), 512))
         for n, id in enumerate(image_id):
             vectors[n] = self.resnet18_features[id]
