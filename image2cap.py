@@ -1,6 +1,6 @@
 # description vector (shape: (512,)) of image -> linear encoder -> caption unit vector (shape: (512,))
 
-from mynn.layers.dense import Dense
+from mynn.layers import dense
 from mygrad import Tensor
 import mygrad as mg
 from mygrad.nnet.losses import margin_ranking_loss
@@ -14,7 +14,7 @@ from mynn.optimizers.sgd import SGD
 # output_dim: 200
 class EmbeddingModel:
     def __init__(self, input_dim, output_dim):
-        self.encoder = Dense(input_dim, output_dim)
+        self.encoder = dense(input_dim, output_dim)
     
     #pass in a tensor 
     def __call__(self, x):
@@ -55,18 +55,63 @@ def extract_triples(coco_data):
 
     np.random.seed(42)  
 
-    for i, caption in enumerate(coco_data.captions):
+    for i, caption in enumerate(coco_data.get_captions()):
         caption_id = caption["id"]
         image_id = caption["image_id"]
-        available_confusers = list(coco_data.image_ids - {image_id})
+        available_confusers = list(coco_data.get_image_ids() - {image_id})
         confuser_id = np.random.choice(available_confusers)
 
-        if i < (0.8 * len(coco_data.captions)):
+        if i < (0.8 * len(coco_data.get_captions())):
             train_triples.append((caption_id, image_id, confuser_id))
         else:
             val_triples.append((caption_id, image_id, confuser_id))
 
+    
     return train_triples, val_triples 
+
+def fast_extract_triples(coco_data):
+    """
+    Efficiently generates (caption_id, image_id, confuser_id) triples for training and validation.
+    Scales well to 400,000+ captions by minimizing object creation and using vectorized operations.
+    """
+    import numpy as np
+
+    np.random.seed(42)
+
+    captions = coco_data.get_captions()  # List of dicts, 400k items
+    all_image_ids = np.array(sorted(coco_data.get_image_ids()))  # Numpy array for fast indexing
+    image_id_to_index = {img_id: idx for idx, img_id in enumerate(all_image_ids)}  # Optional
+
+    caption_count = len(captions)
+    indices = np.random.permutation(caption_count)
+    split_idx = int(0.8 * caption_count)
+
+    train_triples = []
+    val_triples = []
+
+    for i in indices:
+        caption = captions[i]
+        caption_id = caption["id"]
+        image_id = caption["image_id"]
+
+        # Sample a confuser index that is not equal to the current image
+        image_index = image_id_to_index[image_id]
+        confuser_index = np.random.randint(len(all_image_ids) - 1)
+        if confuser_index >= image_index:
+            confuser_index += 1  # skip the true image
+        confuser_id = all_image_ids[confuser_index]
+
+        triple = (caption_id, image_id, confuser_id)
+
+        if i < split_idx:
+            train_triples.append(triple)
+        else:
+            val_triples.append(triple)
+
+        if i%1000 == 0:
+            print("Processed", i, "captions")
+
+    return train_triples, val_triples
 
 
 def store_trained_model_weights(model, file_path = "trained_model_weights.pkl"):
@@ -99,29 +144,45 @@ def model_train(model, train_triples, val_triples, coco_data, glove, epochs=10, 
 
     Returns: trained model
     '''
-    
+    np.random.seed(42) 
     optimizer = SGD(model.parameters, learning_rate=lr)
+
+    final_accuracy = 0
 
     for epoch in range (epochs):
 
         idxs = np.arange(len(train_triples))
         np.random.shuffle(idxs)
 
+        #print("epoch:", epoch)
+
+        total_accuracy = 0
+
         for batch_cnt in range (0, len(train_triples)// batch_size):
 
             batch_indicies = idxs[batch_cnt * batch_size : (batch_cnt + 1) * batch_size]
             batch = [train_triples[i] for i in batch_indicies]
 
-            truth_features = coco_data.image_id_to_embedding([t[1] for t in batch], coco_data.resnet18_features)
-            confuser_features = coco_data.image_id_to_embedding([t[2] for t in batch], coco_data.resnet18_features)
+            truth_features = coco_data.embedding_for_image_id([t[1] for t in batch])
+            confuser_features = coco_data.embedding_for_image_id([t[2] for t in batch])
 
             truth = model(mg.tensor(truth_features))
             confusers = model(mg.tensor(confuser_features)) 
 
-            caption_embeddings = mg.tensor([coco_data.caption_id_to_embedding(t[0], glove) for t in batch])
+            caption_embeddings = mg.tensor([coco_data.embedding_for_caption_id(t[0]) for t in batch])
             loss, accuracy = loss_func(caption_embeddings, truth, confusers)
+
+            total_accuracy += accuracy
+
+            #print("loss:", loss.data, "accuracy:", accuracy)
 
             loss.backward()
             optimizer.step()
-    
+        
+        total_accuracy /= (len(train_triples) // batch_size)
+        print("Total accuracy for epoch", epoch, ":", total_accuracy)
+        final_accuracy += total_accuracy
+
+    print("Final training accuracy:", final_accuracy / epochs)
+
     return model  # Return the trained model

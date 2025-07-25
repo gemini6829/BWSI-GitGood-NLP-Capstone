@@ -65,6 +65,14 @@ class Coco_Data:
     def get_image_ids(self):
         return self.image_ids
 
-
-
+    def get_coco_data(self):
+        return self.coco_data
     
+    def get_captions(self):
+        return self.captions
+    
+    def get_reset18_features(self):
+        return self.resnet18_features
+
+
+
