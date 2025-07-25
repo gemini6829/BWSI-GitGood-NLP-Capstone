@@ -35,7 +35,7 @@ class Coco_Data:
             image_id = cap["image_id"]
             caption_id = cap["id"]
             self.image_id_to_cap_id[image_id].append(caption_id)
-            self.caption_id_to_image_id[caption_id] == image_id
+            self.caption_id_to_image_id[caption_id] = image_id
             self.caption_id_to_captions[caption_id] = cap["caption"]
             
         self.caption_id_to_embedding = None
@@ -61,7 +61,7 @@ class Coco_Data:
         for tokens in tokenized_captions:
             embedding = create_embedding(tokens, glove, idf)
             self.caption_id_to_embedding = {cap_id : embedding for cap_id in caption_ids}
-
+         
     def image_id_to_embedding(self, image_id):
         vectors = np.zeros((len(image_id), 512))
         for n, id in enumerate(image_id):
