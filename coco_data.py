@@ -6,14 +6,8 @@ from caption_embedding import tokenize, create_embedding, calculate_IDF
 
 class Coco_Data:
 
-    def __init__(self, coco_data, resnet18_features):
-        # filename = get_data_path("captions_train2014.json")
-        # with Path(filename).open() as f:
-        #     self.coco_data = json.load(f)
-        
-        # with Path(get_data_path('resnet18_features.pkl')).open('rb') as f:
-        #     self.resnet18_features = pickle.load(f)
-        
+    def __init__(self, coco_data, resnet18_features, glove):
+
         self.coco_data = coco_data
         self.resnet18_features = resnet18_features
 
@@ -36,33 +30,19 @@ class Coco_Data:
             caption_id = cap["id"]
             self.image_id_to_cap_id[image_id].append(caption_id)
             self.caption_id_to_image_id[caption_id] = image_id
+            self.caption_id_to_image_id[caption_id] = image_id
             self.caption_id_to_captions[caption_id] = cap["caption"]
             
         self.caption_id_to_embedding = {}
-        # self.image_id_to_cap_id = defaultdict(list)
-        # for cap in coco_data["annotations"]:
-        #     self.image_id_to_cap_id[cap["image_id"].append(cap["id"])]
-        
-        # self.caption_id_to_image_id = defaultdict(list)
-        # for cap in coco_data["annotations"]:
-        #     self.caption_id_to_image_id[cap["id"].append(cap["image_id"])]
-        
-        # self.caption_id_to_captions = {
-        #     cap["id"] : cap["caption"] for cap in coco_data["annotations"]
-        # }
-
-        # self.caption_id_to_embedding = {
-        #     caption_id: self.resnet18_features[self.caption_id_to_image_id[caption_id]] for caption_id in self.caption_ids
-
-    def caption_id_to_embedding(self, caption_ids, glove):
-        captions = [self.caption_id_to_captions[cap_id] for cap_id in caption_ids]
-        tokenized_captions = [tokenize(caption) for caption in captions]
-
+        tokenized_captions = [tokenize(self.get_text_for_caption[caption]) for caption in self.captions_ids]
         idf = calculate_IDF(tokenized_captions)
-        for tokens in tokenized_captions:
+        
+        for caption_id, tokens in zip(self.caption_ids, tokenized_captions):
             embedding = create_embedding(tokens, glove, idf)
-            self.caption_id_to_embedding = {cap_id : embedding for cap_id in caption_ids}
-        return idf
+            self.caption_id_to_embedding[caption_id] = embedding
+
+    def caption_id_to_embedding(self, caption_id):
+        return self.caption_id_to_embedding[caption_id]
 
     def image_id_to_embedding(self, image_id):
         vectors = np.zeros((len(image_id), 512))

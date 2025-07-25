@@ -87,7 +87,7 @@ def load_trained_model_weights(model, file_path = "trained_model_weights.pkl"):
 
 
 
-def model_train(model, train_triples, val_triples, coco_data, epochs=10, batch_size=32, lr=0.001):
+def model_train(model, train_triples, val_triples, coco_data, glove, epochs=10, batch_size=32, lr=0.001):
     '''
     Parameters:
     - model: EmbeddingModel object
@@ -118,7 +118,7 @@ def model_train(model, train_triples, val_triples, coco_data, epochs=10, batch_s
             truth = model(mg.tensor(truth_features))
             confusers = model(mg.tensor(confuser_features)) 
 
-            caption_embeddings = mg.tensor([coco_data.caption_id_to_embedding(t[0], model) for t in batch])
+            caption_embeddings = mg.tensor([coco_data.caption_id_to_embedding(t[0], glove) for t in batch])
             loss, accuracy = loss_func(caption_embeddings, truth, confusers)
 
             loss.backward()
