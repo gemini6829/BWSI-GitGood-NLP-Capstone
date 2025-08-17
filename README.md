@@ -26,7 +26,14 @@ Our goal was to **build a semantic image search system** that allows users to fi
 
 * **Matplotlib:** Data and result visualization.
 
-<p align="center"><img src="images/COCO_Data.jpg" width="100%"></p>
+---
+
+## ➡️ Workflow
+
+<p align="center"><img src="images/COCO_Data.jpg" width="65%"></p>
+<p align="center"><img src="images/caption_embedding.jpg" width="65%"></p>
+<p align="center"><img src="images/image_embedding.jpg" width="65%"></p>
+<p align="center"><img src="images/image_matching.jpg" width="65%"></p>
 
 ---
 
