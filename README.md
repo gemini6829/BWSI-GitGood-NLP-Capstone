@@ -26,7 +26,8 @@ Our goal was to **build a semantic image search system** that allows users to fi
 
 * **Matplotlib:** Data and result visualization.
 
-!(images/COCO_Data.jpg "COCO Data")
+<p align="center"><img src="images/COCO_Data.jpg" width="100%"></p>
+
 ---
 
 ## 🛠️ Installation
