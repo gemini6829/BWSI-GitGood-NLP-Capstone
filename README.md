@@ -4,7 +4,7 @@
 
 Welcome to the `BWSI-GitGood-NLP-Capstone` repository! This project is the culmination of our team's work during the third week of the **BWSI (Beaver Works Summer Institute) course**, focusing on practical applications of Natural Language Processing (NLP) and computer vision.
 
-Our goal was to **build a semantic image search system** that allows users to find images using natural language descriptions. Given a query description, the system returns images that match the description from a database. This repository contains all the code, models, and resources developed as part of this exciting capstone project.
+Our goal was to **build a semantic image search system** that allows users to find images using natural language descriptions. Given a query description, the system returns images that match the description from a database.
 
 ---
 
